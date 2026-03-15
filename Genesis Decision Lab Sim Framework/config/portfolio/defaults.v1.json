@@ -1,6 +1,0 @@
-{
-  "version": "portfolio-defaults-v1",
-  "concentration_warning_threshold": 0.35,
-  "overlap_warning_threshold": 0.45,
-  "correlated_risk_warning_threshold": 0.4
-}

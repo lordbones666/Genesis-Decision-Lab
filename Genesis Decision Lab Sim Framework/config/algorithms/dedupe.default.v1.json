@@ -1,6 +1,0 @@
-{
-  "version": "dedupe-v1.1",
-  "c_max": 0.8,
-  "tau_hours": 6,
-  "fingerprint_version": "simhash-v1"
-}

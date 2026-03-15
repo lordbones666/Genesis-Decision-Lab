@@ -1,9 +1,0 @@
-{
-  "policy_version": "change-control-v1",
-  "requirements": [
-    "version_bump",
-    "rationale",
-    "expected_impact",
-    "fixture_replay_diff"
-  ]
-}
