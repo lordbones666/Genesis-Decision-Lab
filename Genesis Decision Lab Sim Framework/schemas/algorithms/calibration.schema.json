@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CalibrationAlgorithmConfig",
+  "type": "object",
+  "required": ["version", "method", "alpha_min", "alpha_max", "time_split_required"],
+  "properties": {
+    "version": {"type": "string"},
+    "method": {"type": "string", "enum": ["temperature"]},
+    "alpha_min": {"type": "number", "exclusiveMinimum": 0.0},
+    "alpha_max": {"type": "number", "exclusiveMinimum": 0.0},
+    "time_split_required": {"type": "boolean"}
+  }
+}

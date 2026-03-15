@@ -1,0 +1,7 @@
+{
+  "version": "scenario-templates-v1",
+  "templates": [
+    {"template_id": "macro_stress", "template_version": "v1"},
+    {"template_id": "conflict_spillover", "template_version": "v1"}
+  ]
+}

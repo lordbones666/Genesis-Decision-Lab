@@ -1,0 +1,17 @@
+{
+  "version": "simulation-domains-v1",
+  "enabled_domains": [
+    "macro_system",
+    "conflict_escalation",
+    "crisis_cascade",
+    "financial_contagion",
+    "supply_chain",
+    "sanctions_trade",
+    "commodity_flows",
+    "alliance_deterrence",
+    "institutional_stability",
+    "migration_unrest",
+    "election_transition",
+    "social_contagion"
+  ]
+}

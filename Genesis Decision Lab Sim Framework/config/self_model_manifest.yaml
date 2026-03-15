@@ -1,0 +1,110 @@
+version: "decision-lab-seed.v1"
+routing_defaults:
+  unsupported_task_action: "refuse"
+  require_uncertainty_router: true
+  retrieval_policy: "provenance_required"
+  allowed_routing_actions:
+    - "retrieve"
+    - "simulate"
+    - "retrieve_and_simulate"
+    - "refuse"
+uncertainty_policies:
+  bayesian_update:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    stale_evidence_days_max: 90
+  monte_carlo_paths:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    stale_evidence_days_max: 90
+    max_sigma: 1.0
+  domain_simulation:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    allowed_simulators:
+      - "macro_system"
+      - "conflict_escalation"
+      - "crisis_cascade"
+      - "financial_contagion"
+      - "supply_chain"
+      - "sanctions_trade"
+      - "commodity_flows"
+      - "alliance_deterrence"
+      - "institutional_stability"
+      - "migration_unrest"
+      - "election_transition"
+      - "social_contagion"
+tools:
+  - name: "bayesian_update"
+    purpose: "Update event probability from weighted likelihood-ratio evidence."
+    when_to_use:
+      - "You need a posterior probability update from explicit evidence items."
+      - "Evidence can be represented as likelihood ratios."
+    when_not_to_use:
+      - "Evidence cannot be translated into likelihood ratios."
+      - "Dependency among evidence items is unknown and likely dominant."
+    required_inputs:
+      - "prior"
+      - "evidence"
+    output_shape:
+      prior: "float"
+      posterior: "float"
+      effective_likelihood_ratio: "float"
+      confidence_interval: "list[float]"
+      explanation: "dict[str, float|str]"
+    failure_modes:
+      - "Extremely weak or contradictory evidence yields broad confidence intervals."
+      - "Violations of evidence-independence assumptions can overstate confidence."
+    verification_notes:
+      - "Check confidence interval width before making strong claims."
+      - "Cross-check with alternative evidence weighting assumptions."
+
+  - name: "monte_carlo_paths"
+    purpose: "Estimate threshold-hit probability and terminal distribution under stochastic paths."
+    when_to_use:
+      - "You need scenario sensitivity under drift/volatility assumptions."
+      - "You can provide explicit process parameters and seeds."
+    when_not_to_use:
+      - "Dynamics are not approximated by a jump-diffusion style process."
+      - "Only causal mechanism narratives are needed without numeric simulation."
+    required_inputs:
+      - "initial_value"
+      - "threshold_value"
+      - "mu"
+      - "sigma"
+    output_shape:
+      threshold_hit_probability: "float"
+      mean_final_value: "float"
+      quantiles: "dict[str, float]"
+      model: "str"
+      seed: "int"
+    failure_modes:
+      - "Misspecified sigma or jumps can distort hit probabilities."
+      - "Too few runs can under-sample tail events."
+    verification_notes:
+      - "Re-run with multiple seeds for stability checks."
+      - "Perform parameter stress tests before directional recommendations."
+
+  - name: "domain_simulation"
+    purpose: "Call registered domain simulators through the existing simulation orchestrator."
+    when_to_use:
+      - "A domain simulator exists for the scenario and required variables."
+      - "You need modeled state and metrics under explicit assumptions."
+    when_not_to_use:
+      - "No canonical simulator exists for the requested domain."
+      - "Required domain inputs are missing or outside supported ranges."
+    required_inputs:
+      - "simulator_name"
+      - "inputs"
+    output_shape:
+      simulator: "str"
+      state: "dict[str, float]"
+      metrics: "dict[str, float]"
+      artifacts: "dict[str, float|str|dict[str, float]]"
+      context: "dict[str, str|int]"
+    failure_modes:
+      - "Unknown simulator name raises an explicit failure."
+      - "Out-of-range domain inputs can produce partial utility outputs."
+    verification_notes:
+      - "Record simulator name, config version, and seed for reproducibility."
+      - "Compare against another simulator when outcomes drive decisions."
