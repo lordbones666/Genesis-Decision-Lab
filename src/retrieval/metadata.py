@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,13 +28,31 @@ def _timestamp_for(path: Path) -> str:
     return modified.isoformat()
 
 
+def build_source_id(path: Path, base_dir: Path | None = None) -> str:
+    """Build a stable source id that avoids collisions for duplicate file stems."""
+
+    normalized = path.resolve().as_posix()
+    if base_dir is not None:
+        try:
+            normalized = path.resolve().relative_to(base_dir.resolve()).as_posix()
+        except ValueError:
+            normalized = path.resolve().as_posix()
+
+    digest = hashlib.sha1(normalized.encode("utf-8")).hexdigest()[:8]
+    stem = path.stem.replace(" ", "_")
+    return f"{stem}-{digest}"
+
+
 def build_source_record(
-    path: Path, source_type: str = "document", canonical: bool = True
+    path: Path,
+    source_type: str = "document",
+    canonical: bool = True,
+    base_dir: Path | None = None,
 ) -> SourceRecord:
     """Create normalized source metadata from a file path."""
 
     return SourceRecord(
-        source_id=path.stem,
+        source_id=build_source_id(path, base_dir=base_dir),
         title=path.name,
         path=str(path),
         source_type=source_type,

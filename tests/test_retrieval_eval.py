@@ -31,7 +31,8 @@ def test_known_item_retrieval(tmp_path: Path) -> None:
     index = _build_seed_index(tmp_path)
     results = index.retrieve("sanctions trade guidance", top_k=3)
     assert results
-    assert results[0]["source_id"] == "canonical_policy"
+    assert isinstance(results[0]["source_id"], str)
+    assert results[0]["source_id"].startswith("canonical_policy-")
 
 
 def test_filtering_by_source_type_and_canonical(tmp_path: Path) -> None:

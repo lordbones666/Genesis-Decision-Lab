@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -30,18 +31,32 @@ class IngestionConfig:
     canonical: bool = True
 
 
+def _base_dir(paths: list[Path]) -> Path | None:
+    if not paths:
+        return None
+    resolved = [path.resolve() for path in paths]
+    return Path(os.path.commonpath([str(path) for path in resolved]))
+
+
 def ingest_paths(
     paths: list[Path], config: IngestionConfig | None = None
 ) -> list[IngestedChunk]:
     """Ingest a curated corpus and emit deterministic chunk records."""
 
+    if not paths:
+        return []
+
     cfg = config or IngestionConfig()
     records: list[IngestedChunk] = []
+    common_base_dir = _base_dir(paths)
 
     for path in sorted(paths):
         text = path.read_text(encoding="utf-8")
         source = build_source_record(
-            path, source_type=cfg.source_type, canonical=cfg.canonical
+            path,
+            source_type=cfg.source_type,
+            canonical=cfg.canonical,
+            base_dir=common_base_dir,
         )
         chunks = chunk_text(
             source.source_id, text, chunk_size=cfg.chunk_size, overlap=cfg.overlap

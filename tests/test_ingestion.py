@@ -14,7 +14,30 @@ def test_ingestion_emits_stable_chunk_ids(tmp_path: Path) -> None:
     second = ingest_paths([file_path], config)
 
     assert [item.id for item in first] == [item.id for item in second]
+    assert [item.source_id for item in first] == [item.source_id for item in second]
     assert all(item.provenance["chunk_id"] == item.id for item in first)
+
+
+def test_ingestion_handles_empty_corpus() -> None:
+    assert ingest_paths([]) == []
+
+
+def test_ingestion_source_ids_do_not_collide_for_duplicate_stems(
+    tmp_path: Path,
+) -> None:
+    a_dir = tmp_path / "a"
+    b_dir = tmp_path / "b"
+    a_dir.mkdir()
+    b_dir.mkdir()
+    a_file = a_dir / "policy.md"
+    b_file = b_dir / "policy.md"
+    a_file.write_text("sanctions update", encoding="utf-8")
+    b_file.write_text("trade update", encoding="utf-8")
+
+    records = ingest_paths([a_file, b_file], IngestionConfig(chunk_size=80, overlap=10))
+    source_ids = {record.source_id for record in records}
+
+    assert len(source_ids) == 2
 
 
 def test_ingestion_includes_required_metadata_and_provenance(tmp_path: Path) -> None:
@@ -27,7 +50,7 @@ def test_ingestion_includes_required_metadata_and_provenance(tmp_path: Path) -> 
 
     assert records
     record = records[0]
-    assert record.source_id == "notes"
+    assert record.source_id.startswith("notes-")
     assert record.metadata["source_type"] == "note"
     assert "path" in record.metadata
     assert "timestamp" in record.metadata
