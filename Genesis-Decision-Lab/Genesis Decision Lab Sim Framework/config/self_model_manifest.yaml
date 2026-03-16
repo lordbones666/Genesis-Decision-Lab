@@ -1,0 +1,302 @@
+version: "decision-lab-seed.v1"
+routing_defaults:
+  unsupported_task_action: "refuse"
+  require_uncertainty_router: true
+  retrieval_policy: "provenance_required"
+  allowed_routing_actions:
+    - "retrieve"
+    - "simulate"
+    - "retrieve_and_simulate"
+    - "refuse"
+uncertainty_policies:
+  bayesian_update:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    stale_evidence_days_max: 90
+  monte_carlo_paths:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    stale_evidence_days_max: 90
+    max_sigma: 1.0
+  domain_simulation:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+    allowed_simulators:
+      - "macro_system"
+      - "conflict_escalation"
+      - "crisis_cascade"
+      - "financial_contagion"
+      - "supply_chain"
+      - "sanctions_trade"
+      - "commodity_flows"
+      - "alliance_deterrence"
+      - "institutional_stability"
+      - "migration_unrest"
+      - "election_transition"
+      - "social_contagion"
+  structural_causal_graph:
+    partial_confidence_min: 0.30
+    valid_confidence_min: 0.55
+  network_contagion:
+    partial_confidence_min: 0.30
+    valid_confidence_min: 0.55
+  actor_response:
+    partial_confidence_min: 0.30
+    valid_confidence_min: 0.55
+  hazard_failure:
+    partial_confidence_min: 0.30
+    valid_confidence_min: 0.55
+  scenario_tree_generator:
+    partial_confidence_min: 0.30
+    valid_confidence_min: 0.55
+  hidden_state_estimator:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+  uncertainty_decomposition:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+  value_of_information:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+  model_arbitration:
+    partial_confidence_min: 0.35
+    valid_confidence_min: 0.60
+tools:
+  - name: "bayesian_update"
+    purpose: "Update event probability from weighted likelihood-ratio evidence."
+    when_to_use:
+      - "You need a posterior probability update from explicit evidence items."
+      - "Evidence can be represented as likelihood ratios."
+    when_not_to_use:
+      - "Evidence cannot be translated into likelihood ratios."
+      - "Dependency among evidence items is unknown and likely dominant."
+    required_inputs:
+      - "prior"
+      - "evidence"
+    output_shape:
+      prior: "float"
+      posterior: "float"
+      effective_likelihood_ratio: "float"
+      confidence_interval: "list[float]"
+      explanation: "dict[str, float|str]"
+    failure_modes:
+      - "Extremely weak or contradictory evidence yields broad confidence intervals."
+      - "Violations of evidence-independence assumptions can overstate confidence."
+    verification_notes:
+      - "Check confidence interval width before making strong claims."
+      - "Cross-check with alternative evidence weighting assumptions."
+
+  - name: "monte_carlo_paths"
+    purpose: "Estimate threshold-hit probability and terminal distribution under stochastic paths."
+    when_to_use:
+      - "You need scenario sensitivity under drift/volatility assumptions."
+      - "You can provide explicit process parameters and seeds."
+    when_not_to_use:
+      - "Dynamics are not approximated by a jump-diffusion style process."
+      - "Only causal mechanism narratives are needed without numeric simulation."
+    required_inputs:
+      - "initial_value"
+      - "threshold_value"
+      - "mu"
+      - "sigma"
+    output_shape:
+      threshold_hit_probability: "float"
+      mean_final_value: "float"
+      quantiles: "dict[str, float]"
+      model: "str"
+      seed: "int"
+    failure_modes:
+      - "Misspecified sigma or jumps can distort hit probabilities."
+      - "Too few runs can under-sample tail events."
+    verification_notes:
+      - "Re-run with multiple seeds for stability checks."
+      - "Perform parameter stress tests before directional recommendations."
+
+  - name: "domain_simulation"
+    purpose: "Call registered domain simulators through the existing simulation orchestrator."
+    when_to_use:
+      - "A domain simulator exists for the scenario and required variables."
+      - "You need modeled state and metrics under explicit assumptions."
+    when_not_to_use:
+      - "No canonical simulator exists for the requested domain."
+      - "Required domain inputs are missing or outside supported ranges."
+    required_inputs:
+      - "simulator_name"
+      - "inputs"
+    output_shape:
+      simulator: "str"
+      state: "dict[str, float]"
+      metrics: "dict[str, float]"
+      artifacts: "dict[str, float|str|dict[str, float]]"
+      context: "dict[str, str|int]"
+    failure_modes:
+      - "Unknown simulator name raises an explicit failure."
+      - "Out-of-range domain inputs can produce partial utility outputs."
+    verification_notes:
+      - "Record simulator name, config version, and seed for reproducibility."
+      - "Compare against another simulator when outcomes drive decisions."
+
+  - name: "structural_causal_graph"
+    purpose: "Run structural causal propagation for an intervention on a directed graph."
+    when_to_use:
+      - "You need intervention effects and counterfactual directional impact."
+    when_not_to_use:
+      - "No causal graph or edge assumptions are available."
+    required_inputs:
+      - "baseline"
+      - "edges"
+      - "intervention_node"
+      - "intervention_delta"
+    output_shape:
+      downstream_effects: "dict[str, float]"
+      intervention_forecast: "float"
+      causal_sensitivity: "dict[str, float]"
+    failure_modes:
+      - "Poorly specified edges can invert effect direction."
+    verification_notes:
+      - "Check edge signs and magnitudes against domain priors."
+
+  - name: "network_contagion"
+    purpose: "Propagate network contagion across weighted directed dependencies."
+    when_to_use:
+      - "You need cascade likelihood from a trigger node in a dependency graph."
+    when_not_to_use:
+      - "System is not representable as node-edge network."
+    required_inputs:
+      - "node_states"
+      - "edges"
+      - "trigger_node"
+      - "trigger_delta"
+    output_shape:
+      node_states: "dict[str, float]"
+      cascade_likelihood: "float"
+      critical_nodes: "list[str]"
+    failure_modes:
+      - "Threshold choice can dominate cascade outcomes."
+    verification_notes:
+      - "Run threshold and edge-weight sensitivity sweeps."
+
+  - name: "actor_response"
+    purpose: "Estimate strategic actor response probabilities under a trigger."
+    when_to_use:
+      - "You need adaptive response branches for strategic actors."
+    when_not_to_use:
+      - "Actor incentives and constraints are not parameterized."
+    required_inputs:
+      - "actors"
+      - "trigger_intensity"
+    output_shape:
+      action_probabilities: "dict[str, float]"
+      strategic_branches: "list[str]"
+      adversarial_risk: "float"
+    failure_modes:
+      - "Weak actor priors can yield unstable branch ranking."
+    verification_notes:
+      - "Cross-check with alternative incentive assumptions."
+
+  - name: "hazard_failure"
+    purpose: "Estimate hazard rate and event probability over a horizon."
+    when_to_use:
+      - "You need time-to-event or failure risk at a fixed horizon."
+    when_not_to_use:
+      - "Hazard process is strongly non-stationary over horizon."
+    required_inputs:
+      - "stress_level"
+      - "vulnerability"
+      - "horizon"
+    output_shape:
+      hazard_rate: "float"
+      survival_probability: "float"
+      event_probability: "float"
+    failure_modes:
+      - "Baseline hazard misspecification can dominate results."
+    verification_notes:
+      - "Stress test baseline hazard and vulnerability assumptions."
+
+  - name: "scenario_tree_generator"
+    purpose: "Generate scenario branches from state and uncertainty drivers."
+    when_to_use:
+      - "You need explicit branch assumptions and prior probabilities."
+    when_not_to_use:
+      - "No meaningful uncertainty drivers are available."
+    required_inputs:
+      - "base_state"
+      - "uncertainty_drivers"
+    output_shape:
+      branches: "list[dict[str, str|float|dict[str, float]]]"
+    failure_modes:
+      - "Heuristic branch priors may not match calibrated frequencies."
+    verification_notes:
+      - "Recalibrate branch priors using historical analog checks."
+
+
+  - name: "hidden_state_estimator"
+    purpose: "Estimate latent system state probabilities from observed indicators."
+    when_to_use:
+      - "You need a posterior estimate of hidden regime or latent condition."
+    when_not_to_use:
+      - "Indicators are absent or not mapped to latent-state assumptions."
+    required_inputs:
+      - "indicators"
+    output_shape:
+      state_probabilities: "dict[str, float]"
+      most_likely_state: "str"
+      confidence_band: "list[float]"
+    failure_modes:
+      - "Poor indicator quality can produce unstable state ranking."
+    verification_notes:
+      - "Check confidence band width and compare with alternate priors."
+
+  - name: "uncertainty_decomposition"
+    purpose: "Rank uncertainty drivers by contribution to decision uncertainty."
+    when_to_use:
+      - "You need to know which uncertainties matter most to decisions."
+    when_not_to_use:
+      - "No sensitivity or parameter uncertainty estimates are available."
+    required_inputs:
+      - "sensitivities"
+      - "parameter_uncertainty"
+    output_shape:
+      drivers: "list[dict[str, str|float]]"
+      dominant_driver: "str"
+      concentration_index: "float"
+    failure_modes:
+      - "Degenerate sensitivity inputs can collapse ranking signal."
+    verification_notes:
+      - "Validate stability under alternate sensitivity assumptions."
+
+  - name: "value_of_information"
+    purpose: "Score which additional information most changes decisions."
+    when_to_use:
+      - "You need next-best information targets under current uncertainty."
+    when_not_to_use:
+      - "No uncertainty or information gain estimates are available."
+    required_inputs:
+      - "action_gap"
+      - "uncertainty_weights"
+      - "information_gain"
+    output_shape:
+      ranked_candidates: "list[dict[str, str|float]]"
+      best_next_signal: "str"
+    failure_modes:
+      - "Incorrect action-gap assumptions can overstate VOI rankings."
+    verification_notes:
+      - "Stress-test action_gap and information gain assumptions."
+
+  - name: "model_arbitration"
+    purpose: "Combine model outputs and surface disagreement as structural signal."
+    when_to_use:
+      - "You have multiple model outputs and need arbitration rationale."
+    when_not_to_use:
+      - "Only one model output is available."
+    required_inputs:
+      - "model_outputs"
+    output_shape:
+      combined_estimate: "float"
+      disagreement_score: "float"
+      model_weights: "dict[str, float]"
+      mismatch_warning: "bool"
+    failure_modes:
+      - "Calibration metadata gaps may distort weighting."
+    verification_notes:
+      - "Inspect disagreement score before using blended estimate operationally."

@@ -1,0 +1,17 @@
+{
+  "version": "weights-v1",
+  "base_by_category": {
+    "security": 0.35,
+    "shipping": 0.25,
+    "energy": 0.30,
+    "control": 0.10
+  },
+  "source_tier_multiplier": {
+    "tier_1": 1.0,
+    "tier_2": 0.8,
+    "tier_3": 0.6
+  },
+  "delta_cap": 0.8,
+  "cooldown_hours": 6,
+  "saturation": 0.85
+}
