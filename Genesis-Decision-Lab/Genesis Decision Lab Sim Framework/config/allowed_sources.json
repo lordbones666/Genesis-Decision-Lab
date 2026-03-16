@@ -1,0 +1,7 @@
+{
+  "tiers": {
+    "tier_1": ["who.int", "imf.org", "eia.gov", "opec.org"],
+    "tier_2": ["reuters.com", "apnews.com", "ft.com"],
+    "tier_3": ["substack.com"]
+  }
+}

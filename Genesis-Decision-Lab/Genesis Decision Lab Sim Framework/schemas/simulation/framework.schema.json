@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Simulation Framework Config",
+  "type": "object",
+  "required": ["version", "bayesian", "markov", "monte_carlo"],
+  "properties": {
+    "version": {"type": "string"},
+    "bayesian": {
+      "type": "object",
+      "required": ["source_tier_weights", "half_life_days"],
+      "properties": {
+        "source_tier_weights": {
+          "type": "object",
+          "additionalProperties": {"type": "number"}
+        },
+        "half_life_days": {"type": "number", "minimum": 0}
+      }
+    },
+    "markov": {
+      "type": "object",
+      "required": ["default_horizon_steps", "states"],
+      "properties": {
+        "default_horizon_steps": {"type": "integer", "minimum": 1},
+        "states": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "monte_carlo": {
+      "type": "object",
+      "required": ["runs", "steps", "jump_probability", "jump_mean", "jump_std"],
+      "properties": {
+        "runs": {"type": "integer", "minimum": 1},
+        "steps": {"type": "integer", "minimum": 1},
+        "jump_probability": {"type": "number", "minimum": 0, "maximum": 1},
+        "jump_mean": {"type": "number"},
+        "jump_std": {"type": "number", "minimum": 0}
+      }
+    }
+  }
+}

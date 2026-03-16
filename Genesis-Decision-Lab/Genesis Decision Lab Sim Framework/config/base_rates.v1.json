@@ -1,0 +1,11 @@
+{
+  "version": "base-rates-v1",
+  "as_of": "2026-03-01",
+  "priors": {
+    "inventory_build_weekly:us:all": 0.52,
+    "wci_up_next_print:global:all": 0.47,
+    "attack_incident_14d:hormuz:all": 0.38,
+    "wti_plus_5pct_30d:ovx_q4": 0.41,
+    "default": 0.50
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "version": "calibration-temperature-v1",
+  "method": "temperature",
+  "alpha_min": 0.5,
+  "alpha_max": 3.0,
+  "time_split_required": true
+}

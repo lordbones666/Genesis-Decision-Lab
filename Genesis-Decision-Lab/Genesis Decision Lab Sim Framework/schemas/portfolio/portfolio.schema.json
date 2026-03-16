@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Forecast Portfolio",
+  "type": "object",
+  "required": [
+    "portfolio_id",
+    "forecast_ids",
+    "question_ids",
+    "scenario_ids",
+    "exposure_metrics",
+    "regime_sensitivity",
+    "assumptions"
+  ],
+  "properties": {
+    "portfolio_id": {"type": "string"},
+    "forecast_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "question_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "scenario_ids": {"type": "array", "items": {"type": "string"}},
+    "exposure_metrics": {
+      "type": "object",
+      "required": ["concentration_score", "scenario_overlap_score", "correlated_risk_score"],
+      "properties": {
+        "concentration_score": {"type": "number"},
+        "scenario_overlap_score": {"type": "number"},
+        "correlated_risk_score": {"type": "number"}
+      }
+    },
+    "regime_sensitivity": {"type": "object", "additionalProperties": {"type": "number"},
+      "minProperties": 1},
+    "assumptions": {"type": "array", "items": {"type": "string"}}
+  }
+}

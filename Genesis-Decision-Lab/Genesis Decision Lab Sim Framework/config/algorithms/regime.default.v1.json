@@ -1,0 +1,15 @@
+{
+  "version": "regime-v1.1",
+  "regime_cap": 0.2,
+  "weekly_signal_weights": {
+    "volatility": 0.4,
+    "inventory": 0.3,
+    "freight": 0.3
+  },
+  "question_adjustments": {
+    "C1": 0.05,
+    "M5": 0.08,
+    "K4": 0.1,
+    "CTRL": 0.0
+  }
+}
